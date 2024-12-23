@@ -38,6 +38,11 @@ def process_online(filename):
     item = data['items']
     modifier = data['modifiers']
 
+    print("\n\n\n")
+    print(item.columns)
+    print(modifier.columns)
+
+    print("\n\n\n")
     merged_df = pd.merge(item, modifier, how='outer', left_on='Item Name', right_on='item_name')
 
     # process online data
