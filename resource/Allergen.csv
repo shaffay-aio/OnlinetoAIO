@@ -1,0 +1,13 @@
+id,allergenName,isDefault,iconId
+1,Milk,TRUE,13
+2,Eggs,TRUE,14
+3,Wheat,TRUE,15
+4,Soybean,TRUE,16
+5,Mustard,TRUE,17
+6,Sesame,TRUE,18
+7,Celery,TRUE,19
+8,Crustaceans,TRUE,20
+9,Fish,TRUE,21
+10,Mussels/Oyster,TRUE,22
+11,Tree Nuts,TRUE,23
+12,Peanuts,TRUE,24
