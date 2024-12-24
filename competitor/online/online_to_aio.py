@@ -1,6 +1,9 @@
 import io
 import pandas as pd
 from utils.missing_fields.fill import fix_missing_fields
+from utils.logging_config import setup_logger
+
+logger = setup_logger(__name__)
 
 def assign_unique_ids(df, column_name):
 

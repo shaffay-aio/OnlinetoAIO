@@ -1,7 +1,10 @@
+import time
 import streamlit as st
 from competitor.online.online_to_aio import process_online_only
 from utils.online_endpoint import fun_request
-import time
+from utils.logging_config import setup_logger
+
+logger = setup_logger(__name__)
 
 def main():
     # Set page title and favicon
@@ -32,6 +35,7 @@ def main():
     st.markdown("<div class='center-button'>", unsafe_allow_html=True)
     if st.button("Submit"):
         if input_url:
+
             st.info("Processing your request. Please wait...")
 
             with st.spinner("Fetching data from Doordash..."):  # Loader for the API call
@@ -41,24 +45,26 @@ def main():
 
                 # Get the link from the API
                 link = fun_request(api_url, request_data)
+                logger.info("File recieved from scraping endpoint.")
 
-                if link:
-                    st.success("URL processed successfully! Generating your file...")
+                try:
+                    if link:
+                        st.success("URL processed successfully! Generating your file...")
 
-                    # Process the file using the provided function
-                    result_data = process_online_only(link)
+                        # Process the file using the provided function
+                        result_data = process_online_only(link)
+                        logger.info("Online file processing completed.")
 
-                    # Provide a download button for the processed file
-                    st.markdown("<div class='center-button'>", unsafe_allow_html=True)
-                    st.download_button(
-                        label="📂 Download Final Online to AIO File",
-                        data=result_data,
-                        file_name="Final_Online_to_AIO.xlsx",
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                    )
-                    st.markdown("</div>", unsafe_allow_html=True)
-
-                else:
+                        # Provide a download button for the processed file
+                        st.markdown("<div class='center-button'>", unsafe_allow_html=True)
+                        st.download_button(
+                            label="📂 Download Final Online to AIO File",
+                            data=result_data,
+                            file_name="Final_Online_to_AIO.xlsx",
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        )
+                        st.markdown("</div>", unsafe_allow_html=True)
+                except:
                     st.error("Failed to process the URL. Please try again.")
         else:
             st.warning("Please enter a valid URL before submitting.")

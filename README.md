@@ -1,0 +1,3 @@
+- add if scraping server, throw exception
+- scrape one complete restaurant
+-  scrape multiple restaurants
