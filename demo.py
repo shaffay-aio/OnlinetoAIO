@@ -29,7 +29,7 @@ def main():
 
     # Input URL
     st.markdown("<h4 style='text-align: center;'>Enter the Restaurant URL to process</h4>", unsafe_allow_html=True)
-    input_url = st.text_input("", placeholder="e.g., https://www.doordash.com/store/...")
+    input_url = st.text_input(" ", placeholder="e.g., https://www.doordash.com/store/...")
 
     # Submit button
     st.markdown("<div class='center-button'>", unsafe_allow_html=True)
