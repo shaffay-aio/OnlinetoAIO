@@ -1,7 +1,7 @@
 import time
 import streamlit as st
 from competitor.online.online_to_aio import process_online_only
-from utils.online_endpoint import fun_request
+from utils.online_endpoint import fun_request, check_status
 from utils.logging_config import setup_logger
 
 logger = setup_logger(__name__)
@@ -38,14 +38,17 @@ def main():
 
             st.info("Processing your request. Please wait...")
 
-            with st.spinner("Fetching data from Doordash..."):  # Loader for the API call
+            with st.spinner(f"Fetching data from Doordash..."):  # Loader for the API call
+
                 # First request details
-                api_url = "http://54.218.231.251:8000//process-data"
-                request_data = { "url": input_url, "platform": "doordash" }
+                api_url = "http://54.218.231.251:8000/menu-onboarding-scraper"
+                request_data = { "link": input_url, "platform": "Doordash" }
 
                 # Get the link from the API
+                start = time.time()
                 link = fun_request(api_url, request_data)
-                logger.info("File recieved from scraping endpoint.")
+
+                logger.info(f"File recieved from scraping endpoint. Took {time.time() - start} seconds.")
 
                 try:
                     if link:
@@ -60,7 +63,7 @@ def main():
                         st.download_button(
                             label="📂 Download Final Online to AIO File",
                             data=result_data,
-                            file_name="Final_Online_to_AIO.xlsx",
+                            file_name=f"file.xlsx",
                             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                         )
                         st.markdown("</div>", unsafe_allow_html=True)

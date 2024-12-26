@@ -39,7 +39,8 @@ def process_online(filename):
     data = pd.read_excel(filename, sheet_name=None)
 
     item = data['items']
-    modifier = data['modifiers']
+    raw_modifier = data['modifiers']
+    modifier = raw_modifier[['item_name', 'modifier_name', 'modifier_type', 'option_name', 'option_price']].drop_duplicates()
 
     merged_df = pd.merge(item, modifier, how='outer', left_on='Item Name', right_on='item_name')
 

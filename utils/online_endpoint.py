@@ -2,7 +2,7 @@ import time
 import requests
 import pandas as pd
 from io import BytesIO
- 
+
 def fun_request(url, data):
 
     try:
@@ -13,7 +13,7 @@ def fun_request(url, data):
             #print("Response:", response.json())
 
             raw_data = response.json()
-
+    
             data = raw_data['data']
             info_data = data['info']
             items_data = data['items']
@@ -24,12 +24,13 @@ def fun_request(url, data):
             modifier_df = pd.DataFrame(modifier_data)
 
             file_path = fun_save_to_excel(info_df, items_df, modifier_df)
+            return file_path
+
         else:
             print("Error:", response.status_code, response.text)
 
         b = time.time()
         print("total time = ", b - a)
-        return file_path
 
     except requests.exceptions.RequestException as e:
         print("An error occurred:", e)
@@ -49,3 +50,17 @@ def fun_save_to_excel(info_df, items_df, modifier_df):
 
     print("Data has been saved to an Excel object in memory.")
     return excel_buffer
+
+def check_status():
+
+    url = "http://54.218.231.251:8000/check-status"
+    response = requests.post(url)
+    data = response.json()['data']
+
+    last_update = data['Last Updated']
+    platform = data['Platform']
+    total_categories = data['Total Categories']
+    cat_now = data['Category Now']
+    cat_scraped = data['Categories Scraped']
+
+    return f'{cat_scraped}/{total_categories}'
