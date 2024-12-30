@@ -52,7 +52,7 @@ def process_online(filename):
     merged_df.drop('item_name', axis=1, inplace=True)
     merged_df = merged_df.rename(columns={ 'modifier_name': 'Modifier Name', 'option_name': 'Option Name', 'option_price': 'Option Price', 'modifier_type': 'Modifier Type' })
     merged_df['Modifier Type'] = merged_df['Modifier Type'].apply( lambda x: True if pd.isnull(x) else (False if x.lower() == 'required' else True) )
-    merged_df['Modifier Type'].to_csv("1.csv")
+
     #for i in ['Item Price', 'Option Price']:
     #    merged_df[i] = merged_df[i].apply(lambda x: float(x.replace('$', '')) if pd.notnull(x) else x)    
 
@@ -72,7 +72,6 @@ def assigner(aio_format, merged_df):
     aio_format['Item'] = aio_format['Item'].dropna(subset=['itemName'])
 
     aio_format['Modifier'][['id', 'modifierName', 'isOptional']] = merged_df[['Modifier Name id', 'Modifier Name', 'Modifier Type']].dropna().drop_duplicates()
-    aio_format['Modifier'].to_csv("2.csv")
 
     merged_df['Option Price'] = merged_df['Option Price'].fillna(0)
     aio_format['Modifier Option'][['id', 'optionName', 'price']] = merged_df[['Option Name id', 'Option Name', 'Option Price']].dropna().drop_duplicates()

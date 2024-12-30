@@ -68,7 +68,7 @@ def main():
 
                         # Process the file using the provided function
                         result_data, name = process_online_only(link)
-                        logger.info("Online file processing completed.")
+                        logger.info("Online file processing completed.\n")
 
                         # Provide a download button for the processed file
                         st.markdown("<div class='center-button'>", unsafe_allow_html=True)
