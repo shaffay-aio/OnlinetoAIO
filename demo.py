@@ -26,7 +26,7 @@ def main():
         """,
         unsafe_allow_html=True
     )
-    st.markdown("<h6 style='text-align: center;'>Load data from DoorDash directly to POS in up to 15 minutes</h4>", unsafe_allow_html=True)
+    st.markdown("<h6 style='text-align: center;'>Load data from DoorDash/UberEats directly to POS in up to 15 minutes</h4>", unsafe_allow_html=True)
 
     # Input URL
     st.markdown("<h4 style='text-align: center;'>Select a Service</h4>", unsafe_allow_html=True)
@@ -35,9 +35,9 @@ def main():
     st.markdown("<h4 style='text-align: center;'>Enter the Restaurant URL to process</h4>", unsafe_allow_html=True)
 
     if selected_value == 'Doordash': 
-        placeholder="e.g., https://www.doordash.com/store/..."
+        placeholder="e.g., https://www.doordash.com/store/restaurantname..."
     else: 
-        placeholder="e.g., https://www.ubereats.com/store/..."
+        placeholder="e.g., https://www.ubereats.com/store/restaurantname/..."
     
     input_url = st.text_input(" ", placeholder=placeholder)
 
@@ -72,10 +72,10 @@ def main():
 
                         # Provide a download button for the processed file
                         st.markdown("<div class='center-button'>", unsafe_allow_html=True)
-                        st.download_button( label="📂 Download Final Online to AIO File", data=result_data, file_name="File.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" )
+                        st.download_button( label="📂 Download Final Online to AIO File", data=result_data, file_name=f"{name}-{selected_value}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" )
                         st.markdown("</div>", unsafe_allow_html=True)
                 except Exception as e:
-                    st.error(f"Failed to process the URL. Please try again. {e}")
+                    st.error(f"Failed to process the URL. Dataframe is empty. Please try again. {e}")
         else:
             st.warning("Please enter a valid URL before submitting.")
 

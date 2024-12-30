@@ -253,6 +253,7 @@ def fix_modifier(dataframes, filename, sheetname):
 
     data['multiSelect'] = ["FALSE"] * len(data)
     data['isNested'] = ["FALSE"] * len(data)
+
     data['isOptional'] = data['isOptional'].apply(lambda x: "TRUE" if x != False else "FALSE")
     #data['priceType'] = ["individual"] * len(data)
     #data['canGuestSelectMoreModifiers'] = ["TRUE"] * len(data)
