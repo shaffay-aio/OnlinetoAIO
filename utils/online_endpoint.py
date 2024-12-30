@@ -3,7 +3,7 @@ import requests
 import pandas as pd
 from io import BytesIO
 
-def fun_request(url, data):
+def get_data(url, data):
 
     try:
         a = time.time()
@@ -30,7 +30,7 @@ def fun_request(url, data):
             print("Error:", response.status_code, response.text)
 
         b = time.time()
-        print("total time = ", b - a)
+        print("Total time = ", b - a)
 
     except requests.exceptions.RequestException as e:
         print("An error occurred:", e)
@@ -47,8 +47,6 @@ def fun_save_to_excel(info_df, items_df, modifier_df):
 
     # Ensure the buffer is ready to be read from the beginning
     excel_buffer.seek(0)
-
-    print("Data has been saved to an Excel object in memory.")
     return excel_buffer
 
 def check_status():

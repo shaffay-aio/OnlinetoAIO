@@ -15,7 +15,6 @@ def assign_unique_ids(df, column_name):
     unique_values = [val for val in df[column_name].unique() if pd.notnull(val)]
     value_to_id = {val: idx+1 for idx, val in enumerate(unique_values)}
     df[new_column_name] = df[column_name].map(value_to_id)
-    print("\n\n", value_to_id, "\n\n")
     return df
 
 def process_value(x):
@@ -58,13 +57,15 @@ def process_online(filename):
     for i in ['Category Name', 'Item Name', 'Modifier Name', 'Option Name']:
         merged_df = assign_unique_ids(merged_df, i)
 
-    return merged_df
+    return merged_df, data['info']['Name']
 
 def assigner(aio_format, merged_df):
 
     # assign individual data
     aio_format['Category'][['id', 'categoryName']] = merged_df[['Category Name id', 'Category Name']].dropna().drop_duplicates()
     aio_format['Item'][['id', 'itemName', 'itemDescription', 'itemPrice']] = merged_df[['Item Name id', 'Item Name', 'Item Description', 'Item Price']].drop_duplicates()
+    aio_format['Item'] = aio_format['Item'].dropna(subset=['itemName'])
+
     aio_format['Modifier'][['id', 'modifierName', 'isOptional']] = merged_df[['Modifier Name id', 'Modifier Name', 'Modifier Type']].dropna().drop_duplicates()
     
     merged_df['Option Price'] = merged_df['Option Price'].fillna(0)
@@ -86,7 +87,7 @@ def process_online_only(filename):
 
     # read aio format and process online menu
     aio_format = pd.read_excel("./resource/AIO Template.xlsx", sheet_name=None)
-    merged_df = process_online(filename)
+    merged_df, name = process_online(filename)
 
     # file aio format menu and fill missing fields
     aio_format = assigner(aio_format, merged_df)
@@ -99,4 +100,4 @@ def process_online_only(filename):
             new_format[key].to_excel(writer, sheet_name=key, index=False)            
     output.seek(0)
 
-    return output
+    return output, name
