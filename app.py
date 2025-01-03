@@ -48,36 +48,40 @@ def main():
         if input_url:
             
             st.info("Processing your request. Please wait...")
-            input_url = normalize_url(input_url, selected_value)
+            normalized_input_url = normalize_url(input_url, selected_value)
 
-            with st.spinner(f"Fetching data from {selected_value}..."):  # Loader for the API call
+            if normalized_input_url is not None:
 
-                # First request details
-                api_url = "http://54.218.231.251:8000/menu-onboarding-scraper"
-                request_data = { "link": input_url, "platform": selected_value }
+                with st.spinner(f"Fetching data from {selected_value}..."):  # Loader for the API call
 
-                logger.info(f"Scraping of url {input_url} started.")
+                    # First request details
+                    api_url = "http://54.218.231.251:8000/menu-onboarding-scraper"
+                    request_data = { "link": normalized_input_url, "platform": selected_value }
 
-                # Get the link from the API
-                start = time.time()
-                link = get_data(api_url, request_data)
+                    logger.info(f"Scraping of url {normalized_input_url} started.")
 
-                logger.info(f"File recieved from scraping endpoint. Took {round((time.time() - start)/60)} minutes.")
+                    # Get the link from the API
+                    start = time.time()
+                    link = get_data(api_url, request_data)
 
-                try:
-                    if link:
-                        st.success("URL processed successfully! Generating your file...")
+                    logger.info(f"File recieved from scraping endpoint. Took {round((time.time() - start)/60)} minutes.")
 
-                        # Process the file using the provided function
-                        result_data, name = process_online_only(link)
-                        logger.info("Online file processing completed.\n")
+                    try:
+                        if link:
+                            st.success("URL processed successfully! Generating your file...")
 
-                        # Provide a download button for the processed file
-                        st.markdown("<div class='center-button'>", unsafe_allow_html=True)
-                        st.download_button( label="📂 Download Final Online to AIO File", data=result_data, file_name=f"{name}-{selected_value}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" )
-                        st.markdown("</div>", unsafe_allow_html=True)
-                except Exception as e:
-                    st.error(f"Failed to process the URL. Dataframe is empty. Please try again. {e}")
+                            # Process the file using the provided function
+                            result_data, name = process_online_only(link)
+                            logger.info("Online file processing completed.\n")
+
+                            # Provide a download button for the processed file
+                            st.markdown("<div class='center-button'>", unsafe_allow_html=True)
+                            st.download_button( label="📂 Download Final Online to AIO File", data=result_data, file_name=f"{name}-{selected_value}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" )
+                            st.markdown("</div>", unsafe_allow_html=True)
+                    except Exception as e:
+                        st.error(f"Failed to process the URL. Dataframe is empty. Please try again. {e}")
+            else:
+                st.error("The input URL does not match the expected store format.")
         else:
             st.warning("Please enter a valid URL before submitting.")
 
