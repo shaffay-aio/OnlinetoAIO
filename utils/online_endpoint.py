@@ -1,7 +1,30 @@
+import re
 import time
 import requests
 import pandas as pd
 from io import BytesIO
+
+def normalize_url(input_url, platform):
+
+    # Define a regex pattern to capture the base store URL
+    if platform == 'Doordash': 
+        pattern = r'^(https?://www\.doordash\.com/store/[^/]+/)'
+    elif platform == 'Ubereats':  
+        pattern = r'^(https?://www\.ubereats\.com/store/[^/]+/[^/?]+)'
+
+    # Attempt to match the entire input URL
+    match = re.match(pattern, input_url)
+    if match:
+        # If a match is found, return the captured group (base URL)
+        return match.group(1)
+    else:
+        # If not matched, attempt to search within the URL
+        search_match = re.search(pattern, input_url)
+        if search_match:
+            return search_match.group(1)
+    
+    # If no match is found, return None
+    return None
 
 def get_data(url, data):
 
