@@ -3,7 +3,7 @@
 [server]
 headless = true
 port = 8027
-enableCORS = false
+enableCORS = true
 
 [theme]
 base = "light"
