@@ -1,9 +1,10 @@
-- scrape multiple restaurants
-- add progressbar endpoint how much data has been scraped
-- scrape 2,3 restaurants simultanously. see if files get mixed or what tp test fastapi and server capabilities
+### Online To AIO
 
-x - nan in item sheet
-x - ubereats integration
-x - progressbar
-- ngrok 
-- when webui is closed, scraping endpoint should close as well
+#### Commands
+```
+docker build -t online-to-aio .
+docker run -p 8027:8027 online-to-aio
+```
+
+#### Access At
+http://localhost:8027/
