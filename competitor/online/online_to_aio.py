@@ -37,7 +37,22 @@ def process_value(x):
     else:
         return None  # Assign null for unexpected types
             
-def process_online(filename):
+def assign_linked_ids(merged_df, column_name, linkage_column_name):
+
+    # make unique identifier using column and linkage
+    key = f'{column_name} Key'
+    merged_df[key] = merged_df[linkage_column_name].astype(str) + '-' + merged_df[column_name]
+    uniques = merged_df[[key, f'{linkage_column_name}', column_name]].drop_duplicates().reset_index(drop=True)
+    uniques.dropna(inplace=True)
+    uniques = uniques.reset_index(drop=True)
+
+    # assign id and reverse map
+    uniques[f'{column_name} id'] = uniques.index + 1
+    df = merged_df.merge(uniques[[key, f'{column_name} id']], on=key, how='left')
+    df.drop(key, inplace=True, axis=1)
+    return df
+
+def process_online(filename, platform):
     
     # read online available data and merge
     data = pd.read_excel(filename, sheet_name=None)
@@ -47,20 +62,28 @@ def process_online(filename):
     modifier = raw_modifier[['item_name', 'modifier_name', 'modifier_type', 'option_name', 'option_price']].drop_duplicates()
 
     merged_df = pd.merge(item, modifier, how='outer', left_on='Item Name', right_on='item_name')
+    merged_df.drop('item_name', axis=1, inplace=True)
 
     # process online data
-    merged_df.drop('item_name', axis=1, inplace=True)
     merged_df = merged_df.rename(columns={ 'modifier_name': 'Modifier Name', 'option_name': 'Option Name', 'option_price': 'Option Price', 'modifier_type': 'Modifier Type' })
     merged_df['Modifier Type'] = merged_df['Modifier Type'].apply( lambda x: True if pd.isnull(x) else (False if x.lower() == 'required' else True) )
-
-    #for i in ['Item Price', 'Option Price']:
-    #    merged_df[i] = merged_df[i].apply(lambda x: float(x.replace('$', '')) if pd.notnull(x) else x)    
 
     for i in ['Item Price', 'Option Price']:
         merged_df[i] = merged_df[i].apply(process_value)
 
-    for i in ['Category Name', 'Item Name', 'Modifier Name', 'Option Name']:
+    for i in ['Category Name']:
         merged_df = assign_unique_ids(merged_df, i)
+
+    #merged_df.to_csv("temp1.csv")
+    if platform == 'Ubereats':
+        merged_df = assign_linked_ids(merged_df, 'Item Name', 'Item Price')
+        merged_df = assign_linked_ids(merged_df, 'Modifier Name', 'Item Name id')
+        merged_df = assign_linked_ids(merged_df, 'Option Name', 'Option Price')
+    else:
+        merged_df = assign_unique_ids(merged_df, 'Item Name')
+        merged_df = assign_unique_ids(merged_df, 'Modifier Name')
+        merged_df = assign_unique_ids(merged_df, 'Option Name')
+    #merged_df.to_csv("temp2.csv")
 
     return merged_df, data['info']['Name']
 
@@ -69,7 +92,9 @@ def assigner(aio_format, merged_df):
     # assign individual data
     aio_format['Category'][['id', 'categoryName']] = merged_df[['Category Name id', 'Category Name']].dropna().drop_duplicates()
     aio_format['Item'][['id', 'itemName', 'itemDescription', 'itemPrice']] = merged_df[['Item Name id', 'Item Name', 'Item Description', 'Item Price']].drop_duplicates()
+    #aio_format['Item'].to_csv("temp3.csv")
     aio_format['Item'] = aio_format['Item'].dropna(subset=['itemName'])
+    #aio_format['Item'].to_csv("temp4.csv")
 
     aio_format['Modifier'][['id', 'modifierName', 'isOptional']] = merged_df[['Modifier Name id', 'Modifier Name', 'Modifier Type']].dropna().drop_duplicates()
 
@@ -81,6 +106,7 @@ def assigner(aio_format, merged_df):
 
     aio_format['Category Items'][['categoryId', 'itemId']] = merged_df[['Category Name id', 'Item Name id']].dropna().drop_duplicates()
     aio_format['Category Items']['id'] = [i+1 for i in range(0, len(aio_format['Category Items']))]
+    #aio_format['Category Items'].to_csv("temp5.csv")
 
     aio_format['Item Modifiers'][['itemId', 'modifierId']] = merged_df[['Item Name id', 'Modifier Name id']].dropna().drop_duplicates()
 
@@ -88,14 +114,15 @@ def assigner(aio_format, merged_df):
 
     return aio_format
 
-def process_online_only(filename):
+def process_online_only(filename, selected_value):
 
     # read aio format and process online menu
     aio_format = pd.read_excel("./resource/AIO Template.xlsx", sheet_name=None)
-    merged_df, name = process_online(filename)
+    merged_df, name = process_online(filename, selected_value)
 
     # file aio format menu and fill missing fields
     aio_format = assigner(aio_format, merged_df)
+    #aio_format['Item'].to_csv("temp6.csv")
     new_format = fix_missing_fields(aio_format)
 
     # buffer excel file with multiple sheets

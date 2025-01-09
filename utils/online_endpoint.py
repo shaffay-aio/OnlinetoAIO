@@ -38,6 +38,7 @@ def get_data(url, data):
             raw_data = response.json()
     
             data = raw_data['data']
+            print(data , "\n\n")
             info_data = data['info']
             items_data = data['items']
             modifier_data = data['modifiers']
@@ -83,5 +84,6 @@ def check_status():
     total_categories = data['Total Categories']
     cat_now = data['Category Now']
     cat_scraped = data['Categories Scraped']
+    url = data['Url']
 
-    return f'{cat_scraped}/{total_categories}'
+    return f'{cat_scraped}/{total_categories}', url

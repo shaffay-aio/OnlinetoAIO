@@ -71,7 +71,7 @@ def main():
                             st.success("URL processed successfully! Generating your file...")
 
                             # Process the file using the provided function
-                            result_data, name = process_online_only(link)
+                            result_data, name = process_online_only(link, selected_value)
                             logger.info("Online file processing completed.\n")
 
                             # Provide a download button for the processed file
