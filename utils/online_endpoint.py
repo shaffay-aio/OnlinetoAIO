@@ -90,9 +90,9 @@ def check_status():
     total_categories = data['Total Categories']
     cat_now = data['Category Now']
     cat_scraped = data['Categories Scraped']
-    #our_url = data['Url']
+    url = data['Url']
 
-    return int(cat_scraped), int(total_categories)
+    return int(cat_scraped), int(total_categories), url
 
 async def checker(queue):
     """
