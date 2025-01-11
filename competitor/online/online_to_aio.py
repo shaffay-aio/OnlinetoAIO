@@ -74,7 +74,6 @@ def process_online(filename, platform):
     for i in ['Category Name']:
         merged_df = assign_unique_ids(merged_df, i)
 
-    #merged_df.to_csv("temp1.csv")
     if platform == 'Ubereats':
         merged_df = assign_linked_ids(merged_df, 'Item Name', 'Item Price')
         merged_df = assign_linked_ids(merged_df, 'Modifier Name', 'Item Name id')
@@ -84,21 +83,17 @@ def process_online(filename, platform):
         merged_df = assign_unique_ids(merged_df, 'Modifier Name')
         merged_df = assign_unique_ids(merged_df, 'Option Name')
 
-    #merged_df.to_csv("mapped-menu.csv")
-
     return merged_df, data['info']['Name']
 
 def assigner(aio_format, merged_df):
 
     # assign individual data
     aio_format['Category'][['id', 'categoryName']] = merged_df[['Category Name id', 'Category Name']].dropna().drop_duplicates()
+
     aio_format['Item'][['id', 'itemName', 'itemDescription', 'itemPrice']] = merged_df[['Item Name id', 'Item Name', 'Item Description', 'Item Price']].drop_duplicates()
-    #aio_format['Item'].to_csv("temp3.csv")
     aio_format['Item'] = aio_format['Item'].dropna(subset=['itemName'])
-    #aio_format['Item'].to_csv("temp4.csv")
 
     aio_format['Modifier'][['id', 'modifierName', 'isOptional']] = merged_df[['Modifier Name id', 'Modifier Name', 'Modifier Type']].dropna().drop_duplicates()
-
     merged_df['Option Price'] = merged_df['Option Price'].fillna(0)
     aio_format['Modifier Option'][['id', 'optionName', 'price']] = merged_df[['Option Name id', 'Option Name', 'Option Price']].dropna().drop_duplicates()
 
@@ -107,7 +102,6 @@ def assigner(aio_format, merged_df):
 
     aio_format['Category Items'][['categoryId', 'itemId']] = merged_df[['Category Name id', 'Item Name id']].dropna().drop_duplicates()
     aio_format['Category Items']['id'] = [i+1 for i in range(0, len(aio_format['Category Items']))]
-    #aio_format['Category Items'].to_csv("temp5.csv")
 
     aio_format['Item Modifiers'][['itemId', 'modifierId']] = merged_df[['Item Name id', 'Modifier Name id']].dropna().drop_duplicates()
 
