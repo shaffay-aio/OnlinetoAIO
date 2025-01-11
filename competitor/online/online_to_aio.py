@@ -84,7 +84,7 @@ def process_online(filename, platform):
         merged_df = assign_unique_ids(merged_df, 'Modifier Name')
         merged_df = assign_unique_ids(merged_df, 'Option Name')
 
-    merged_df.to_csv("mapped-menu.csv")
+    #merged_df.to_csv("mapped-menu.csv")
 
     return merged_df, data['info']['Name']
 

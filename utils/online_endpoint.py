@@ -37,12 +37,14 @@ async def get_data(url, data):
         async with aiohttp.ClientSession() as session:
             async with session.post(url, json=data) as response:
 
-            raw_data = response.json()
-    
-            data = raw_data['data']
-            info_data = data['info']
-            items_data = data['items']
-            modifier_data = data['modifiers']
+                if response.status == 200:
+                    raw_data = await response.json()
+                    
+                    data = raw_data['data']
+
+                    info_data = data['info']
+                    items_data = data['items']
+                    modifier_data = data['modifiers']
 
                     info_df = pd.DataFrame(info_data)
                     items_df = pd.DataFrame(items_data)
@@ -90,4 +92,25 @@ def check_status():
     cat_scraped = data['Categories Scraped']
     url = data['Url']
 
-    return f'{cat_scraped}/{total_categories}'
+    return int(cat_scraped), int(total_categories), url
+
+async def checker(queue):
+    """
+    runs async for providing current status of scraping
+    checks status, forwards it, waits, repeat
+    """
+    
+    try:
+        while True:
+            # get status
+            status = check_status()
+
+            # yield status by putting it into the queue
+            await queue.put(status)
+
+            # wait for few seconds
+            await asyncio.sleep(3)
+
+    except asyncio.CancelledError:
+        # Signal to stop
+        await queue.put(None)        
