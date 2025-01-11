@@ -1,5 +1,7 @@
 import re
 import time
+import aiohttp
+import asyncio
 import requests
 import pandas as pd
 from io import BytesIO
@@ -26,40 +28,42 @@ def normalize_url(input_url, platform):
     # If no match is found, return None
     return None
 
-def get_data(url, data):
+async def get_data(url, data):
 
     try:
         a = time.time()
-        response = requests.post(url, json=data)
 
-        if response.status_code == 200:
-            #print("Response:", response.json())
+        # simple request is blocking code, using aiohttp instead to create async session
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, json=data) as response:
 
             raw_data = response.json()
     
             data = raw_data['data']
-            print(data , "\n\n")
             info_data = data['info']
             items_data = data['items']
             modifier_data = data['modifiers']
 
-            info_df = pd.DataFrame(info_data)
-            items_df = pd.DataFrame(items_data)
-            modifier_df = pd.DataFrame(modifier_data)
+                    info_df = pd.DataFrame(info_data)
+                    items_df = pd.DataFrame(items_data)
+                    modifier_df = pd.DataFrame(modifier_data)
 
-            file_path = fun_save_to_excel(info_df, items_df, modifier_df)
-            return file_path
-
-        else:
-            print("Error:", response.status_code, response.text)
-
+                    file_path = fun_save_to_excel(info_df, items_df, modifier_df)
+                    return file_path
+                else:
+                    print("Error:", response.status, await response.text())
+        
         b = time.time()
-        print("Total time = ", b - a)
+        print("Total time =", b - a)
 
-    except requests.exceptions.RequestException as e:
+    except aiohttp.ClientError as e:
         print("An error occurred:", e)
 
+    except Exception as e:
+        print("An unexpected error occurred:", e)
+
 def fun_save_to_excel(info_df, items_df, modifier_df):
+    
     # Create a BytesIO object to hold the Excel data in memory
     excel_buffer = BytesIO()
 
@@ -86,4 +90,4 @@ def check_status():
     cat_scraped = data['Categories Scraped']
     url = data['Url']
 
-    return f'{cat_scraped}/{total_categories}', url
+    return f'{cat_scraped}/{total_categories}'

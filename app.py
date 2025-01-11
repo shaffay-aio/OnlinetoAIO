@@ -1,13 +1,14 @@
 import time
-import pandas as pd
+import asyncio
 import streamlit as st
 from utils.logging_config import setup_logger
 from competitor.online.online_to_aio import process_online_only
-from utils.online_endpoint import get_data, check_status, normalize_url
+from utils.online_endpoint import get_data, normalize_url, checker
 
 logger = setup_logger(__name__)
 
-def main():
+async def main():
+
     # Set page title and favicon
     st.set_page_config(page_title="Online To AIO", page_icon="🔄", layout="centered")
 
@@ -52,7 +53,7 @@ def main():
 
             if normalized_input_url is not None:
 
-                with st.spinner(f"Fetching data from {selected_value}..."):  # Loader for the API call
+                #with st.spinner(f"Fetching data from {selected_value}..."):  # Loader for the API call
 
                     # First request details
                     api_url = "http://54.218.231.251:8000/menu-onboarding-scraper"
@@ -62,7 +63,48 @@ def main():
 
                     # Get the link from the API
                     start = time.time()
-                    link = get_data(api_url, request_data)
+
+                    queue = asyncio.Queue()
+                    checker_task = asyncio.create_task(checker(queue))
+                    get_data_task = asyncio.create_task(get_data(api_url, request_data))
+
+                    progress_bar = st.progress(0)
+                    progress_text = st.empty()
+                    progress_text.text("Processing: Updating Scraping Status.")
+
+                    while True:
+                        # Check if get_data_task is done
+                        if get_data_task.done():
+                            progress_bar.progress(100)
+                            progress_text.text("Processing: Scraping Completed.")
+                            break
+                        
+                        try:
+                            # Wait for a status update with a timeout
+                            status = await asyncio.wait_for(queue.get(), timeout=3)
+                            if status is None:
+                                break
+
+                            current, total, url = status
+
+                            if (total > 0) and (url == normalized_input_url):
+                                progress = int((current / total) * 100)
+                                progress_bar.progress(progress)
+                                progress_text.text(f"Processing: {current} of {total} categories.")
+
+                        except asyncio.TimeoutError:
+                            pass  # No status update received within timeout
+                    
+                    # Cancel the checker coroutine
+                    checker_task.cancel()
+                    
+                    try:
+                        await checker_task
+                    except asyncio.CancelledError:
+                        pass
+                    
+                    # Get the result from get_data
+                    link = await get_data_task
 
                     logger.info(f"File recieved from scraping endpoint. Took {round((time.time() - start)/60)} minutes.")
 
@@ -88,5 +130,5 @@ def main():
     # Footer
     st.markdown( """ <hr> <p style="text-align: center; color: gray;"> Online To AIO App © 2024 | Powered by Streamlit </p> """, unsafe_allow_html=True )
 
-if __name__ == "__main__":
-    main()
+
+asyncio.run(main())
