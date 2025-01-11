@@ -42,7 +42,7 @@ def assign_linked_ids(merged_df, column_name, linkage_column_name):
     # make unique identifier using column and linkage
     key = f'{column_name} Key'
     merged_df[key] = merged_df[linkage_column_name].astype(str) + '-' + merged_df[column_name]
-    uniques = merged_df[[key, f'{linkage_column_name}', column_name]].drop_duplicates().reset_index(drop=True)
+    uniques = merged_df[[key, linkage_column_name, column_name]].drop_duplicates().reset_index(drop=True)
     uniques.dropna(inplace=True)
     uniques = uniques.reset_index(drop=True)
 
@@ -83,7 +83,8 @@ def process_online(filename, platform):
         merged_df = assign_unique_ids(merged_df, 'Item Name')
         merged_df = assign_unique_ids(merged_df, 'Modifier Name')
         merged_df = assign_unique_ids(merged_df, 'Option Name')
-    #merged_df.to_csv("temp2.csv")
+
+    merged_df.to_csv("mapped-menu.csv")
 
     return merged_df, data['info']['Name']
 
@@ -122,7 +123,6 @@ def process_online_only(filename, selected_value):
 
     # file aio format menu and fill missing fields
     aio_format = assigner(aio_format, merged_df)
-    #aio_format['Item'].to_csv("temp6.csv")
     new_format = fix_missing_fields(aio_format)
 
     # buffer excel file with multiple sheets
