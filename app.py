@@ -70,10 +70,12 @@ async def main():
 
                     progress_bar = st.progress(0)
                     progress_text = st.empty()
-            
+                    progress_text.text("Processing: Updating Scraping Status.")
+
                     while True:
                         # Check if get_data_task is done
                         if get_data_task.done():
+                            progress_bar.progress(100)
                             progress_text.text("Processing: Scraping Completed.")
                             break
                         
@@ -83,15 +85,12 @@ async def main():
                             if status is None:
                                 break
 
-                            current, total = status
+                            current, total, url = status
 
-                            if (total > 0):
+                            if (total > 0) and (url == normalized_input_url):
                                 progress = int((current / total) * 100)
                                 progress_bar.progress(progress)
                                 progress_text.text(f"Processing: {current} of {total} categories.")
-                            else:
-                                progress_bar.progress(0)
-                                progress_text.text("Processing: Updating Scraping Status.")
 
                         except asyncio.TimeoutError:
                             pass  # No status update received within timeout
