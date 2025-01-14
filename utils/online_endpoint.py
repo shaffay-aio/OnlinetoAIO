@@ -109,7 +109,7 @@ async def checker(queue):
             await queue.put(status)
 
             # wait for few seconds
-            await asyncio.sleep(3)
+            await asyncio.sleep(7)
 
     except asyncio.CancelledError:
         # Signal to stop

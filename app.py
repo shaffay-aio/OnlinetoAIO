@@ -10,10 +10,10 @@ logger = setup_logger(__name__)
 async def main():
 
     # Set page title and favicon
-    st.set_page_config(page_title="Online To AIO", page_icon="🔄", layout="centered")
+    st.set_page_config(page_title="Menu Pre-Onboarding", page_icon="🔄", layout="centered")
 
     # Title and description
-    st.title("🔄 Online to AIO")
+    st.title("🔄 Menu Pre-Onboarding")
     st.markdown(
         """
         <style>
@@ -28,13 +28,15 @@ async def main():
         unsafe_allow_html=True
     )
 
-    st.markdown("<h6 style='text-align: center;'>Load data from DoorDash/UberEats directly to POS in up to 15 minutes</h4>", unsafe_allow_html=True)
+    st.markdown("<h6 style='text-align: center;'>Load data from Online Platform directly to POS in up to 15 minutes</h4>", unsafe_allow_html=True)
 
     # Input URL
-    st.markdown("<h4 style='text-align: center;'>Select a Service</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='text-align: center;'></h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='text-align: center;'>Select a Platform</h4>", unsafe_allow_html=True)
     selected_value = st.selectbox(" ", ["Doordash", "Ubereats"])
 
-    st.markdown("<h4 style='text-align: center;'>Enter the Restaurant URL to process</h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='text-align: center;'></h4>", unsafe_allow_html=True)
+    st.markdown("<h4 style='text-align: center;'>Paste the Restaurant URL to process</h4>", unsafe_allow_html=True)
 
     if selected_value == 'Doordash': 
         placeholder="e.g., https://www.doordash.com/store/restaurantname-restaurantid/"
@@ -130,6 +132,6 @@ async def main():
         st.markdown("</div>", unsafe_allow_html=True)
 
     # Footer
-    st.markdown( """ <hr> <p style="text-align: center; color: gray;"> Online To AIO App © 2024 | Powered by Streamlit </p> """, unsafe_allow_html=True )
+    st.markdown( """ <hr> <p style="text-align: center; color: gray;"> Menu Pre-Onboarding App © 2025 | Powered by AIO </p> """, unsafe_allow_html=True )
 
 asyncio.run(main())
