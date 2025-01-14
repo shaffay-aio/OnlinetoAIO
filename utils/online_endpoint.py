@@ -28,13 +28,15 @@ def normalize_url(input_url, platform):
     # If no match is found, return None
     return None
 
-async def get_data(url, data):
-
+async def get_data(url, data, seconds=1200):
+  
     try:
         a = time.time()
 
+        timeout = aiohttp.ClientTimeout(total=seconds)
+
         # simple request is blocking code, using aiohttp instead to create async session
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(timeout=timeout) as session:
             async with session.post(url, json=data) as response:
 
                 if response.status == 200:
