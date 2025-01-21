@@ -1,5 +1,6 @@
 import time
 import asyncio
+import pandas as pd
 import streamlit as st
 from utils.logging_config import setup_logger
 from competitor.online.online_to_aio import process_online_only
@@ -114,7 +115,8 @@ async def main():
                         logger.info(f"File recieved from scraping endpoint. Took {round((time.time() - start)/60)} minutes.")
 
                         try:
-                            if link:
+                            df = pd.read_excel(link, sheet_name=None)
+                            if link and not df.empty:
                                 st.success(f"{selected_value} Menu Scraped Successfully !!!")
 
                                 # Process the file using the provided function
@@ -124,7 +126,9 @@ async def main():
                                 # Provide a download button for the processed file
                                 st.download_button( label=" 📂 Download Final Online to AIO Format", data=result_data, file_name=f"{name}-{selected_value}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" )
                         except Exception as e:
-                            st.error(f"Failed to process the URL. Dataframe is empty. Please try again. {e}")
+
+                            # website structure changed, multi-menus
+                            st.error(f"&nbsp; Restaurant Processing Unsuccessful !!!")
                 else:
                     st.error("The input URL does not match the expected store format.")
             else:
