@@ -116,7 +116,7 @@ async def main():
 
                         try:
                             df = pd.read_excel(link, sheet_name=None)
-                            if link and not df.empty:
+                            if link and not df['items'].empty:
                                 st.success(f"{selected_value} Menu Scraped Successfully !!!")
 
                                 # Process the file using the provided function
