@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8027:8027"
+      - "8040:8040"
     restart: always
     labels:
       - "com.aioapp.description=Online to AIO service"

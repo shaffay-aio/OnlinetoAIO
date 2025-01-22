@@ -15,7 +15,7 @@ COPY . /app
 WORKDIR /app
 
 # STEP-4 : Expose port
-EXPOSE 8027
+EXPOSE 8040
 
 # STEP-5: application running command
-CMD ["streamlit", "run", "app.py", "--server.port=8027"]
+CMD ["python", "server.py"]

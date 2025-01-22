@@ -5,6 +5,7 @@ import asyncio
 import requests
 import pandas as pd
 from io import BytesIO
+from fastapi import HTTPException
 
 def normalize_url(input_url, platform):
 
@@ -28,43 +29,32 @@ def normalize_url(input_url, platform):
     # If no match is found, return None
     return None
 
-async def get_data(url, data, seconds=1200):
-  
+def get_data(url, data):
+
     try:
-        a = time.time()
+        # Sending a POST request to the given URL
+        response = requests.post(url, json=data)
 
-        timeout = aiohttp.ClientTimeout(total=seconds)
+        if response.status_code == 200:
+            raw_data = response.json()
 
-        # simple request is blocking code, using aiohttp instead to create async session
-        async with aiohttp.ClientSession(timeout=timeout) as session:
-            async with session.post(url, json=data) as response:
+            data = raw_data['data']
+            info_data = data['info']
+            items_data = data['items']
+            modifier_data = data['modifiers']
 
-                if response.status == 200:
-                    raw_data = await response.json()
-                    
-                    data = raw_data['data']
+            info_df = pd.DataFrame(info_data)
+            items_df = pd.DataFrame(items_data)
+            modifier_df = pd.DataFrame(modifier_data)
 
-                    info_data = data['info']
-                    items_data = data['items']
-                    modifier_data = data['modifiers']
+            file = fun_save_to_excel(info_df, items_df, modifier_df)
+            return file, items_df.empty
 
-                    info_df = pd.DataFrame(info_data)
-                    items_df = pd.DataFrame(items_data)
-                    modifier_df = pd.DataFrame(modifier_data)
-
-                    file_path = fun_save_to_excel(info_df, items_df, modifier_df)
-                    return file_path
-                else:
-                    print("Error:", response.status, await response.text())
-        
-        b = time.time()
-        print("Total time =", b - a)
-
-    except aiohttp.ClientError as e:
-        print("An error occurred:", e)
-
+        else:
+            raise HTTPException(status_code=response.status_code, detail="Error in response")
+    
     except Exception as e:
-        print("An unexpected error occurred:", e)
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
 
 def fun_save_to_excel(info_df, items_df, modifier_df):
     
