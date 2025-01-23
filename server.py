@@ -8,18 +8,30 @@ from utils.logging_config import setup_logger
 from competitor.online.online_to_aio import process_online_only
 from utils.online_endpoint import get_data, normalize_url
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 logger = setup_logger(__name__)
 
 # FastAPI application
 app = FastAPI()
 
+origins = [
+    "*",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # Request model
 class ScrapeRequest(BaseModel):
     platform: str
     input_url: str
 
-@app.post("/menupreonboarding/")
+@app.post("/menupreonboarding")
 async def scrape_menu(platform: str, input_url: str):
 
     error_detail = "Internal Server Error."
