@@ -49,12 +49,15 @@ def get_data(url, data):
 
             file = fun_save_to_excel(info_df, items_df, modifier_df)
             return file, items_df.empty
-
+    
+        elif response.status_code == 427:
+            raise HTTPException(status_code=response.status_code, detail=response['detail'])
+        
         else:
-            raise HTTPException(status_code=response.status_code, detail="Error in response")
+            raise HTTPException(status_code=response.status_code, detail="Something went wrong on Scraping server.")
     
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
 
 def fun_save_to_excel(info_df, items_df, modifier_df):
     

@@ -7,7 +7,7 @@ from typing import Optional
 from utils.logging_config import setup_logger
 from competitor.online.online_to_aio import process_online_only
 from utils.online_endpoint import get_data, normalize_url
-from fastapi.responses import StreamingResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 logger = setup_logger(__name__)
@@ -32,14 +32,13 @@ class ScrapeRequest(BaseModel):
     input_url: str
 
 @app.post("/menupreonboarding")
-async def scrape_menu(platform: str, input_url: str):
-
-    error_detail = "Internal Server Error."
+async def scrape_menu(request: ScrapeRequest):
+    platform = request.platform
+    input_url = request.input_url
     try:
         # normalize input url
         normalized_input_url = normalize_url(input_url, platform)
         if normalized_input_url is None:
-            error_detail = f"Invalid {platform} URL format."
             raise HTTPException(status_code=403, detail=f"Invalid {platform} URL format.")
         logger.info(f"Scraping of {normalized_input_url} has started.")
 
@@ -53,7 +52,6 @@ async def scrape_menu(platform: str, input_url: str):
         end = time.time()
 
         if empty:
-            error_detail = "Empty dataframe recieved from scraping endpoint."
             raise HTTPException(status_code=422, detail="Empty dataframe recieved from scraping endpoint.")
         logger.info(f"File recieved from scraping endpoint in {round(end - start, 2)} minutes.")
 
@@ -67,9 +65,11 @@ async def scrape_menu(platform: str, input_url: str):
             headers={"Content-Disposition": f"attachment; filename={name}.xlsx"}
         )
 
+    except HTTPException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
+    
     except Exception as e:
-        logger.info(f"Exception has occured. {e}")
-        raise HTTPException(status_code=500, detail=error_detail)
+        raise HTTPException(status_code=500, detail="Internal server error.")
     
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8040)
+    uvicorn.run(app, host="127.0.0.1", port=8040)
