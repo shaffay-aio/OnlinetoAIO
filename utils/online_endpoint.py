@@ -51,7 +51,7 @@ def get_data(url, data):
             return file, items_df.empty
     
         elif response.status_code == 429:
-            raise HTTPException(status_code=response.status_code, detail=response['detail'])
+            raise HTTPException(status_code=response.status_code, detail="Scraping server is occupied at the moment. Try again after few minutes.")
         
         else:
             raise HTTPException(status_code=response.status_code, detail="Something went wrong on Scraping server.")

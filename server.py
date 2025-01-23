@@ -53,7 +53,7 @@ async def scrape_menu(request: ScrapeRequest):
 
         if empty:
             raise HTTPException(status_code=422, detail="Empty dataframe recieved from scraping endpoint.")
-        logger.info(f"File recieved from scraping endpoint in {round(end - start, 2)} minutes.")
+        logger.info(f"File recieved from scraping endpoint in {round(end - start/60, 2)} minutes.")
 
         # convert to aio format
         result_data, name = process_online_only(file, platform)
