@@ -50,7 +50,7 @@ def get_data(url, data):
             file = fun_save_to_excel(info_df, items_df, modifier_df)
             return file, items_df.empty
     
-        elif response.status_code == 427:
+        elif response.status_code == 429:
             raise HTTPException(status_code=response.status_code, detail=response['detail'])
         
         else:
