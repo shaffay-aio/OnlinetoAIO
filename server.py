@@ -31,6 +31,10 @@ class ScrapeRequest(BaseModel):
     platform: str
     input_url: str
 
+@app.get("/health")
+def health_check():
+    return {"status": "OK"}
+
 @app.post("/menupreonboarding")
 async def scrape_menu(request: ScrapeRequest):
     platform = request.platform
