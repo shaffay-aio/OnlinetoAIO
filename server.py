@@ -12,6 +12,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 logger = setup_logger(__name__)
 
+is_processing = False
+
 # FastAPI application
 app = FastAPI()
 
@@ -37,6 +39,12 @@ async def health_check():
 
 @app.post("/menupreonboarding")
 def scrape_menu(request: ScrapeRequest):
+
+    global is_processing
+    if is_processing:
+        raise HTTPException(status_code=429, detail="Another request is being processed. Please wait.")
+    is_processing = True
+
     platform = request.platform
     input_url = request.input_url
     try:
@@ -74,6 +82,9 @@ def scrape_menu(request: ScrapeRequest):
     
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal server error.")
+    
+    finally:
+        is_processing = False
     
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8040)
