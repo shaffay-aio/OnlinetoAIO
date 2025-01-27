@@ -34,6 +34,9 @@ class ScrapeRequest(BaseModel):
     platform: str
     input_url: str
 
+class StatusRequest(BaseModel):
+    platform: str
+
 @app.get("/health")
 async def health_check():
     return {"status": "OK"}
@@ -49,9 +52,13 @@ async def cancel():
         return {"status": "Cancelation Unsuccessful"}
 
 @app.post("/checkstatus")
-async def status():
+async def status(request: StatusRequest):
     scraped, total, _ = check_status()
-    return 15 * (scraped/total)
+
+    if request.platform == 'Doordash':
+        return 15 * (scraped/total)
+    else: 
+        return 5 * (scraped/total)
 
 @app.post("/menupreonboarding")
 def scrape_menu(request: ScrapeRequest):
