@@ -34,9 +34,6 @@ class ScrapeRequest(BaseModel):
     platform: str
     input_url: str
 
-class StatusRequest(BaseModel):
-    platform: str
-
 @app.get("/health")
 async def health_check():
     return {"status": "OK"}
@@ -52,17 +49,14 @@ async def cancel():
         return {"status": "Cancelation Unsuccessful"}
 
 @app.post("/checkstatus")
-async def status(request: StatusRequest):
+async def status():
     scraped, total, _ = check_status()
-
-    if request.platform == 'Doordash':
-        return 15 * (scraped/total)
-    else: 
-        return 5 * (scraped/total)
+    return (scraped/total) * 100
 
 @app.post("/menupreonboarding")
 def scrape_menu(request: ScrapeRequest):
 
+    # multi-request handling disabled
     global is_processing
     if is_processing:
         raise HTTPException(status_code=429, detail="Another request is being processed. Please wait.")
