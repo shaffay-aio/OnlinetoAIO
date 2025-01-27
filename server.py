@@ -1,5 +1,6 @@
 import time
 import uvicorn  
+import requests
 import pandas as pd
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -36,6 +37,17 @@ class ScrapeRequest(BaseModel):
 @app.get("/health")
 async def health_check():
     return {"status": "OK"}
+
+@app.post("/scrapingcancelation")
+async def cancel():
+    url = "http://54.218.231.251:8000/cancel-scraping"
+    data = requests.post(url)
+
+    if data.status_code == 200:
+        return {"status": "Canceled Successfully"}
+    else:
+        return {"status": "Cancelation Unsuccessful"}
+
 
 @app.post("/menupreonboarding")
 def scrape_menu(request: ScrapeRequest):
