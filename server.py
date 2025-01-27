@@ -32,11 +32,11 @@ class ScrapeRequest(BaseModel):
     input_url: str
 
 @app.get("/health")
-def health_check():
+async def health_check():
     return {"status": "OK"}
 
 @app.post("/menupreonboarding")
-async def scrape_menu(request: ScrapeRequest):
+def scrape_menu(request: ScrapeRequest):
     platform = request.platform
     input_url = request.input_url
     try:
@@ -57,7 +57,7 @@ async def scrape_menu(request: ScrapeRequest):
 
         if empty:
             raise HTTPException(status_code=422, detail="Empty dataframe recieved from scraping endpoint.")
-        logger.info(f"File recieved from scraping endpoint in {round(end - start/60, 2)} minutes.")
+        logger.info(f"File recieved from scraping endpoint in {round((end - start)/60, 2)} minutes.")
 
         # convert to aio format
         result_data, name = process_online_only(file, platform)
