@@ -56,9 +56,9 @@ async def status(request: StatusRequest):
     scraped, total, _ = check_status()
 
     if request.platform == 'Doordash':
-        return 15 * (scraped/total)
+        return 15 * (1 - (scraped/total))
     else: 
-        return 5 * (scraped/total)
+        return 5 * (1 - (scraped/total))
 
 @app.post("/menupreonboarding")
 def scrape_menu(request: ScrapeRequest):
