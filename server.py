@@ -55,7 +55,7 @@ async def status():
     scraped, total, _ = check_status()
 
     if total == 0:
-        return {"progress": 0}
+        return {"progress": 1}
     else:
         return {"progress": round((scraped / total) * 100)} 
 
@@ -95,12 +95,11 @@ def scrape_menu(request: ScrapeRequest):
         logger.info("Online to AIO format conversion completed. File returned successfully.")
 
         filename = f"{name}-{platform}.xlsx"
-        response = StreamingResponse(
+        return StreamingResponse(
             result_data,
             media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             headers={"Content-Disposition": f"attachment; filename={filename}"}
         )
-        return {"filename": filename, "file": response}
 
     except HTTPException as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
