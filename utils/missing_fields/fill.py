@@ -97,8 +97,11 @@ missing_fields = {
     }
 }
 
-def truncate_values(df, column_name, max_length=16):
+def truncate_values_pos(df, column_name, max_length=16):
     return df[column_name].apply(lambda x: x[:max_length] if isinstance(x, str) else x)
+
+def truncate_values_dashboard(df, column_name, max_length=45):
+    return df[column_name].apply(lambda x: x[:max_length] if isinstance(x, str) and len(x) > max_length else x)
 
 def read_or_create_sheet(filename, sheet_name):
     return filename[sheet_name]
@@ -112,6 +115,7 @@ def fix_menu_sheet(dataframes, filename, sheetname):
         for col in missing_fields[sheetname].keys():
             data[col] = [missing_fields[sheetname][col]]
     else:
+        data['menuName'] = truncate_values_dashboard(data, 'menuName')
         data['posDisplayName'] = data['menuName']
         #data['menuDescription'] = data['menuName']
         data['posButtonColor'] = ["#e34032"] * len(data)
@@ -122,11 +126,13 @@ def fix_menu_sheet(dataframes, filename, sheetname):
 def fix_category_sheet(dataframes, filename, sheetname):
     data = read_or_create_sheet(filename, sheet_name=sheetname)
     data['categoryName'] = remove_quotations(data['categoryName'])
+    data['categoryName'] = truncate_values_dashboard(data, 'categoryName')
     category_names = data['categoryName'].tolist()
+
     data['id'] = list(range(1, len(data) + 1))
     data['posDisplayName'] = category_names
     data['posDisplayName'] = remove_quotations(data['posDisplayName'])
-    data['posDisplayName'] = truncate_values(data, 'posDisplayName')
+    data['posDisplayName'] = truncate_values_pos(data, 'posDisplayName')
 
     data['kdsDisplayName'] = category_names
     data['kdsDisplayName'] = remove_quotations(data['kdsDisplayName'])
@@ -150,8 +156,10 @@ def fix_items_sheet(dataframes, filename, sheetname):
 
     data['id'] = list(range(1, len(data) + 1))
     data['itemName'] = remove_quotations(data['itemName'])
+    data['itemName'] = truncate_values_dashboard(data, 'itemName')
+
     data['posDisplayName'] = data['itemName']
-    data['posDisplayName'] = truncate_values(data, 'posDisplayName')
+    data['posDisplayName'] = truncate_values_pos(data, 'posDisplayName')
     data['kdsName'] = data['itemName']
     #data['showOnMenu'] = ["TRUE"] * len(data)
     #data['showOnline'] = ["TRUE"] * len(data)
@@ -187,8 +195,10 @@ def fix_item_modifiers(dataframes, filename, sheetname):
 def fix_modifier_options(dataframes, filename, sheetname):
     data = read_or_create_sheet(filename, sheet_name=sheetname)
     data['optionName'] = remove_quotations(data['optionName'])
+    data['optionName'] = truncate_values_dashboard(data, 'optionName')
+    
     data['posDisplayName'] = data['optionName']
-    data['posDisplayName'] = truncate_values(data, 'posDisplayName')
+    data['posDisplayName'] = truncate_values_pos(data, 'posDisplayName')
     #data['kdsDisplayName'] = data['optionName']
     if 'price' not in data.columns or not pd.to_numeric(data['price'], errors='coerce').notnull().all():
         data['price'] = [0] * len(data)
@@ -209,6 +219,8 @@ def fix_modifier_modifier_options(dataframes, filename, sheetname):
     data = data.merge(data3[['id', 'optionName']], left_on='modifierOptionId', right_on='id', how='left', suffixes=('', '_data3'))
     
     data['optionDisplayName'] = data.apply(lambda row: f"{row['optionName']} {row['modifierName']}" if row['isNested'] == "TRUE" else row['optionName'], axis=1)
+    data['optionDisplayName'] = truncate_values_dashboard(data, 'optionDisplayName')
+    
     data.drop(columns=['id', 'id_data3', 'modifierName', 'isNested', 'optionName'], inplace=True)
 
     dataframes[sheetname] = data
@@ -217,6 +229,8 @@ def fix_modifier_group(dataframes, filename, sheetname):
     data = read_or_create_sheet(filename, sheet_name=sheetname)
     data['onPrem'] = ["TRUE"] * len(data)
     data['offPrem'] = ["TRUE"] * len(data)
+    data['groupName'] = truncate_values_dashboard(data, 'groupName')
+
     data['posDisplayName'] = data['groupName']
     dataframes[sheetname] = data
 
@@ -248,8 +262,10 @@ def fix_modifier(dataframes, filename, sheetname):
     data = read_or_create_sheet(filename, sheet_name=sheetname)
 
     data['modifierName'] = remove_quotations(data['modifierName'])
+    data['modifierName'] = truncate_values_dashboard(data, 'modifierName')
+
     data['posDisplayName'] = data['modifierName']
-    data['posDisplayName'] = truncate_values(data, 'posDisplayName')
+    data['posDisplayName'] = truncate_values_pos(data, 'posDisplayName')
 
     data['multiSelect'] = ["FALSE"] * len(data)
     data['isNested'] = ["FALSE"] * len(data)
