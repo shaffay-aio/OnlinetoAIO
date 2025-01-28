@@ -94,12 +94,13 @@ def scrape_menu(request: ScrapeRequest):
         result_data, name = process_online_only(file, platform)
         logger.info("Online to AIO format conversion completed. File returned successfully.")
 
-        filename = f"{name}-{platform}"
-        return StreamingResponse(
+        filename = f"{name}-{platform}.xlsx"
+        response = StreamingResponse(
             result_data,
             media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            headers={"Content-Disposition": f"attachment; filename={filename}.xlsx"}
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
         )
+        return {"filename": filename, "file": response}
 
     except HTTPException as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
