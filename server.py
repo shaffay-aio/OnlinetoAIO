@@ -48,10 +48,14 @@ async def cancel():
     else:
         return {"status": "Cancelation Unsuccessful"}
 
-@app.post("/checkstatus")
+@app.get("/checkstatus")
 async def status():
     scraped, total, _ = check_status()
-    return (scraped/total) * 100
+
+    if total == 0:
+        return {"progress": 0}
+    else:
+        return {"progress": round((scraped / total) * 100)} 
 
 @app.post("/menupreonboarding")
 def scrape_menu(request: ScrapeRequest):
