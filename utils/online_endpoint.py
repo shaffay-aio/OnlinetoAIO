@@ -80,10 +80,10 @@ def check_status():
     response = requests.post(url)
     data = response.json()['data']
 
-    last_update = data['Last Updated']
-    platform = data['Platform']
+    _ = data['Last Updated']
+    _ = data['Platform']
     total_categories = data['Total Categories']
-    cat_now = data['Category Now']
+    _ = data['Category Now']
     cat_scraped = data['Categories Scraped']
     url = data['Url']
 
