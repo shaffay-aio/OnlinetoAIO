@@ -44,8 +44,10 @@ async def cancel():
     data = requests.post(url)
 
     if data.status_code == 200:
+        logger.info("Scraping terminated successfully.")
         return {"status": "Canceled Successfully"}
     else:
+        logger.info("Scraping termination unsuccessful.")
         return {"status": "Cancelation Unsuccessful"}
 
 @app.get("/checkstatus")
