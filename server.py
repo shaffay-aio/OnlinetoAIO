@@ -2,7 +2,7 @@ import time
 import uvicorn  
 import requests
 import pandas as pd
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from typing import Optional
 from utils.logging_config import setup_logger
@@ -10,6 +10,7 @@ from competitor.online.online_to_aio import process_online_only
 from utils.online_endpoint import get_data, normalize_url, check_status
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
+from io import BytesIO
 
 logger = setup_logger(__name__)
 
@@ -58,6 +59,21 @@ async def status():
         return {"progress": 1}
     else:
         return {"progress": round((scraped / total) * 100)} 
+
+@app.post("/onlinetoaioformatter")
+async def format_menu(platform: str, file: UploadFile = File(...)):
+
+    file_data = await file.read()
+    file_stream = BytesIO(file_data)
+
+    result_data, name = process_online_only(file_stream, platform)
+
+    filename = f"{name}-{platform}.xlsx"
+    return StreamingResponse(
+        result_data,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
 
 @app.post("/menupreonboarding")
 def scrape_menu(request: ScrapeRequest):
