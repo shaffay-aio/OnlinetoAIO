@@ -66,7 +66,11 @@ async def format_menu(platform: str, file: UploadFile = File(...)):
     file_data = await file.read()
     file_stream = BytesIO(file_data)
 
-    result_data, name = process_online_only(file_stream, platform)
+    try:
+        result_data, name = process_online_only(file_stream, platform)
+        logger.info("Online to AIO format conversion via API completed. File returned successfully.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Format Error: {e}")
 
     filename = f"{name}-{platform}.xlsx"
     return StreamingResponse(
