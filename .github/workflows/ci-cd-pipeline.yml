@@ -25,3 +25,30 @@ jobs:
 
       - name: Build project
         run: echo "Build Successful!"
+
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install SSH client
+        run: sudo apt-get install -y openssh-client
+
+      - name: Add SSH key
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
+      - name: Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST_IP }} << 'EOF'
+            sudo su
+            cd shaffay/fastapi-OnlinetoAIO
+            git pull https://shaffay-aio:${{ secrets.GH_PAT }}@github.com/shaffay-aio/OnlinetoAIO
+            docker compose down
+            docker compose up --build -d
+          EOF
+
+      - name: Deploy project
+        run: echo "Deployment Successful!"
