@@ -44,7 +44,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST_IP }} << 'EOF'
             sudo su
-            cd shaffay/fastapi-OnlinetoAIO
+            cd /var/snap/amazon-ssm-agent/9881/shaffay/fastapi-OnlinetoAIO
             git pull https://shaffay-aio:${{ secrets.GH_PAT }}@github.com/shaffay-aio/OnlinetoAIO
             docker compose down
             docker compose up --build -d
