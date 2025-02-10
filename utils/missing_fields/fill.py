@@ -54,12 +54,7 @@ missing_fields = {
         'minSelector': 7,
         'maxSelector': 7,
         'isSizeModifier': 7,
-        #'showOnPos': 7,
-        #'showOnKiosk': 7,
-        #'showOnMpos': 7,
-        #'showOnQR': 7,
-        #'showOnline': 7,
-        #'showOnThirdParty': 7,
+
         'limitIndividualModifierSelection': 7
 
         # additional madatory columns not added, dont see purpose why this exist for other than main menu key
@@ -117,10 +112,8 @@ def fix_menu_sheet(dataframes, filename, sheetname):
     else:
         data['menuName'] = truncate_values_dashboard(data, 'menuName')
         data['posDisplayName'] = data['menuName']
-        #data['menuDescription'] = data['menuName']
         data['posButtonColor'] = ["#e34032"] * len(data)
         data['sortOrder'] = list(range(1, len(data) + 1))
-        #data['restaurantId'] = [1] * len(data)
     dataframes[sheetname] = data
 
 def fix_category_sheet(dataframes, filename, sheetname):
@@ -161,11 +154,7 @@ def fix_items_sheet(dataframes, filename, sheetname):
     data['posDisplayName'] = data['itemName']
     data['posDisplayName'] = truncate_values_pos(data, 'posDisplayName')
     data['kdsName'] = data['itemName']
-    #data['showOnMenu'] = ["TRUE"] * len(data)
-    #data['showOnline'] = ["TRUE"] * len(data)
-    #data['showPOS'] = ["TRUE"] * len(data)
-    #data['showQR'] = ["TRUE"] * len(data)
-    #data['showThirdParty'] = ["TRUE"] * len(data)
+
     data['orderQuantityLimit'] = ["TRUE"] * len(data)
     data['minLimit'] = [1] * len(data)
     data['maxLimit'] = [999] * len(data)
@@ -199,7 +188,6 @@ def fix_modifier_options(dataframes, filename, sheetname):
     
     data['posDisplayName'] = data['optionName']
     data['posDisplayName'] = truncate_values_pos(data, 'posDisplayName')
-    #data['kdsDisplayName'] = data['optionName']
     if 'price' not in data.columns or not pd.to_numeric(data['price'], errors='coerce').notnull().all():
         data['price'] = [0] * len(data)
     data['isStockAvailable'] = ["TRUE"] * len(data)
@@ -271,17 +259,8 @@ def fix_modifier(dataframes, filename, sheetname):
     data['isNested'] = ["FALSE"] * len(data)
 
     data['isOptional'] = data['isOptional'].apply(lambda x: "TRUE" if x != False else "FALSE")
-    #data['priceType'] = ["individual"] * len(data)
-    #data['canGuestSelectMoreModifiers'] = ["TRUE"] * len(data)
-    #data['minSelector'] = [0] * len(data)
     data['isSizeModifier'] = ["FALSE"] * len(data)
 
-    #data['showOnPos'] = ["TRUE"] * len(data)
-    #data['showOnKiosk'] = ["TRUE"] * len(data)
-    #data['showOnMpos'] = ["TRUE"] * len(data)
-    #data['showOnQR'] = ["TRUE"] * len(data)
-    #data['showOnline'] = ["TRUE"] * len(data)
-    #data['showOnThirdParty'] = ["TRUE"] * len(data)
     data['limitIndividualModifierSelection'] = ["TRUE"] * len(data)
 
     df2 = filename["Modifier ModifierOptions"]

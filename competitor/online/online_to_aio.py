@@ -20,7 +20,7 @@ def assign_unique_ids(df, column_name):
 def process_value(x):
 
     if pd.isnull(x):
-        return x  # Assign as it is if null
+        return 0  # Assign as it is if null
     
     elif isinstance(x, int):
         return x  # Assign as it is if integer
@@ -47,8 +47,7 @@ def assign_linked_ids(merged_df, column_name, linkage_column_name):
     uniques = uniques.reset_index(drop=True)
 
     # assign id and reverse map
-    # ERROR
-    uniques[f'{column_name} id'] = uniques.index + 1 # list(range(1, len(data) + 1))
+    uniques[f'{column_name} id'] = list(range(1, len(uniques) + 1)) # uniques.index + 1  
     df = merged_df.merge(uniques[[key, f'{column_name} id']], on=key, how='left')
     df.drop(key, inplace=True, axis=1)
     return df
@@ -107,7 +106,6 @@ def assigner(aio_format, merged_df):
     aio_format['Item Modifiers'][['itemId', 'modifierId']] = merged_df[['Item Name id', 'Modifier Name id']].dropna().drop_duplicates()
 
     aio_format['Modifier ModifierOptions'][['modifierId', 'modifierOptionId']] = merged_df[['Modifier Name id', 'Option Name id']].dropna().drop_duplicates()
-
     return aio_format
 
 def process_online_only(filename, selected_value):
