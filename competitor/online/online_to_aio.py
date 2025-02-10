@@ -71,6 +71,9 @@ def process_online(filename, platform):
     for i in ['Item Price', 'Option Price']:
         merged_df[i] = merged_df[i].apply(process_value)
 
+    # if someone tests file via csv, its easier if ids are in sequence for particular category, item, modifier
+    #merged_df = merged_df.sort_values(by=['Category Name', 'Item Name', 'Modifier Name', 'Option Name'])
+
     for i in ['Category Name']:
         merged_df = assign_unique_ids(merged_df, i)
 
@@ -90,6 +93,10 @@ def assigner(aio_format, merged_df):
     # assign individual data
     aio_format['Category'][['id', 'categoryName']] = merged_df[['Category Name id', 'Category Name']].dropna().drop_duplicates()
 
+    # ISSUE: as an item had same price, but with different categories it had different description
+    # when it passes through UberEats, it uses assign_linked_ids so tehy get assigned same ids
+    # when it passes through missing field it reassigns ids based on separate row
+    # merged_df[['Item Name id', 'Item Name', 'Item Price']] = merged_df[['Item Name id', 'Item Name', 'Item Price']].drop_duplicates()
     aio_format['Item'][['id', 'itemName', 'itemDescription', 'itemPrice']] = merged_df[['Item Name id', 'Item Name', 'Item Description', 'Item Price']].drop_duplicates()
     aio_format['Item'] = aio_format['Item'].dropna(subset=['itemName'])
 

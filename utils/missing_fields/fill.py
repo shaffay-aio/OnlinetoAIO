@@ -122,6 +122,7 @@ def fix_category_sheet(dataframes, filename, sheetname):
     data['categoryName'] = truncate_values_dashboard(data, 'categoryName')
     category_names = data['categoryName'].tolist()
 
+    # TODO: DANGER
     data['id'] = list(range(1, len(data) + 1))
     data['posDisplayName'] = category_names
     data['posDisplayName'] = remove_quotations(data['posDisplayName'])
@@ -147,6 +148,7 @@ def fix_items_sheet(dataframes, filename, sheetname):
 
     data = read_or_create_sheet(filename, sheet_name=sheetname)
 
+    # TODO: DANGER
     data['id'] = list(range(1, len(data) + 1))
     data['itemName'] = remove_quotations(data['itemName'])
     data['itemName'] = truncate_values_dashboard(data, 'itemName')
