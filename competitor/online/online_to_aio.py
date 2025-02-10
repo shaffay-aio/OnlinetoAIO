@@ -47,7 +47,8 @@ def assign_linked_ids(merged_df, column_name, linkage_column_name):
     uniques = uniques.reset_index(drop=True)
 
     # assign id and reverse map
-    uniques[f'{column_name} id'] = uniques.index + 1
+    # ERROR
+    uniques[f'{column_name} id'] = uniques.index + 1 # list(range(1, len(data) + 1))
     df = merged_df.merge(uniques[[key, f'{column_name} id']], on=key, how='left')
     df.drop(key, inplace=True, axis=1)
     return df
@@ -66,7 +67,7 @@ def process_online(filename, platform):
 
     # process online data
     merged_df = merged_df.rename(columns={ 'modifier_name': 'Modifier Name', 'option_name': 'Option Name', 'option_price': 'Option Price', 'modifier_type': 'Modifier Type' })
-    merged_df['Modifier Type'] = merged_df['Modifier Type'].apply( lambda x: True if pd.isnull(x) else (False if x.lower() == 'required' else True) )
+    merged_df['Modifier Type'] = merged_df['Modifier Type'].apply( lambda x: True if pd.isnull(x) else (False if 'required' in x.lower() else True) )
 
     for i in ['Item Price', 'Option Price']:
         merged_df[i] = merged_df[i].apply(process_value)
