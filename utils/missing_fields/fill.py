@@ -8,88 +8,28 @@ missing_fields = {
         'id': 1,
         'menuName': "Main Menu",
         'posDisplayName': "Main Menu",
-        #'menuDescription': "Main Menu",
-        #'restaurantId': 1,
         'sortOrder': 1,
         'posButtonColor': "#e34032"
     },
-    'Category': {
-        'id': 7,
-        'posDisplayName': 7,
-        'kdsDisplayName': 7,
-        'sortOrder': 7,
-        'menuIds': 7
-    },
-    'Category Items': {
-        'id': 7,
-        'sortOrder': 7
-    },
-    'Item': {
-        'id': 7,
-        #'showOnMenu': 7,
-        #'showOnline': 7,
-        #'showPOS': 7,
-        #'showQR': 7,
-        #'showThirdParty': 7,
-        'posDisplayName': 7,
-        'kdsDisplayName': 7,
-        'orderQuantityLimit': 7,
-        'minLimit': 7,
-        'maxLimit': 7,
-        'noMaxLimit': 7
+    'Category': {},
+    'Category Items': {},
+    'Item': {},
+    'Item Modifiers': {},
+    'Modifier': {},
+    'Modifier ModifierOptions': {},
+    'Modifier Option': {},
 
-        # additional madatory columns not added, dont see purpose why this exist for other than main menu key
-    },
-    'Item Modifiers': {
-        'sortOrder': 7
-    },
-    'Modifier': {
-        'id': 7,
-        'posDisplayName': 7,
-        'multiSelect': 7,
-        'isNested': 7,
-        'isOptional': 7,
-        'priceType': 7,
-        'canGuestSelectMoreModifiers': 7,
-        'minSelector': 7,
-        'maxSelector': 7,
-        'isSizeModifier': 7,
+    'Modifier Group': {},
+    'Category Modifiers': {},
+    'Category ModifierGroups': {},
+    'Item Modifier Group': {},
 
-        'limitIndividualModifierSelection': 7
-
-        # additional madatory columns not added, dont see purpose why this exist for other than main menu key
-    },
-    'Modifier Option': {
-        'id': 7,
-        'posDisplayName': 7,
-        #'kdsDisplayName': 7,
-        'price': 7,
-        'isStockAvailable': 7,
-        'isSizeModifier': 7
-    },
-    'Modifier ModifierOptions': {
-        'isDefaultSelected': 7,
-        'maxLimit': 7
-    },
-    'Modifier Group': {
-        'onPrem': 7,
-        'offPrem': 7,
-        'posDisplayname': 7
-    },
     'Setting': {},
     'Visibility Setting': {},
     'Day Schedule': {},
-    'Category ModifierGroups': {
-        'sortOrder': 7   
-    },
-    'Category Modifiers': {
-        'sortOrder': 7   
-    },
+
     'Allergen': {},
     'Tag': {},
-    'Item Modifier Group': {
-        'sortOrder': 7   
-    }
 }
 
 def truncate_values_pos(df, column_name, max_length=16):
@@ -122,8 +62,8 @@ def fix_category_sheet(dataframes, filename, sheetname):
     data['categoryName'] = truncate_values_dashboard(data, 'categoryName')
     category_names = data['categoryName'].tolist()
 
-    # TODO: DANGER
-    data['id'] = list(range(1, len(data) + 1))
+    # commented because online to aio tool's ids are getting overwritten and issues get hiden, causing maping to mix up
+    #data['id'] = list(range(1, len(data) + 1))
     data['posDisplayName'] = category_names
     data['posDisplayName'] = remove_quotations(data['posDisplayName'])
     data['posDisplayName'] = truncate_values_pos(data, 'posDisplayName')
@@ -148,8 +88,8 @@ def fix_items_sheet(dataframes, filename, sheetname):
 
     data = read_or_create_sheet(filename, sheet_name=sheetname)
 
-    # TODO: DANGER
-    data['id'] = list(range(1, len(data) + 1))
+    # commented because online to aio tool's ids are getting overwritten and issues get hiden, causing maping to mix up
+    #data['id'] = list(range(1, len(data) + 1))
     data['itemName'] = remove_quotations(data['itemName'])
     data['itemName'] = truncate_values_dashboard(data, 'itemName')
 
@@ -161,7 +101,6 @@ def fix_items_sheet(dataframes, filename, sheetname):
     data['minLimit'] = [1] * len(data)
     data['maxLimit'] = [999] * len(data)
 
-    # newer additions
     data['isSpecialRequest'] = ["TRUE"] * len(data)
     data['taxLinkedWithParentSetting'] = ["TRUE"] * len(data)
     data['calculatePricesWithTaxIncluded'] = ["TRUE"] * len(data)
@@ -201,7 +140,6 @@ def fix_modifier_modifier_options(dataframes, filename, sheetname):
     data['isDefaultSelected'] = ["FALSE"] * len(data)
     data['maxLimit'] = [1] * len(data)
 
-    # NEWLY ADDED ONE
     data2 = filename["Modifier"]
     data3 = filename["Modifier Option"]
 
@@ -273,7 +211,6 @@ def fix_modifier(dataframes, filename, sheetname):
 
     data['maxSelector'] = data.apply(lambda row: 1 if row['isOptional'] == "FALSE" else row['maxSelector'], axis=1)
 
-    # NEW additions
     data['onPrem'] = ["TRUE"] * len(data)
     data['offPrem'] = ["TRUE"] * len(data)
     data['stockStatus'] = ["TRUE"] * len(data)
@@ -294,58 +231,28 @@ def add_remaining(dataframes, filename, sheetname):
     dataframes[sheetname] = data
 
 def fix_missing_fields(filename):
+    
     dataframes = {}
-    for sheetname in missing_fields.keys():
-        if sheetname == "Menu":
-            fix_menu_sheet(dataframes, filename, sheetname)
 
-        elif sheetname == "Category":
-            fix_category_sheet(dataframes, filename, sheetname)
+    fix_menu_sheet(dataframes, filename, "Menu")
+    fix_category_sheet(dataframes, filename, "Category")
+    fix_category_items_sheet(dataframes, filename, "Category Items")
+    fix_items_sheet(dataframes, filename, "Item")
+    fix_item_modifiers(dataframes, filename, "Item Modifiers")
+    fix_modifier(dataframes, filename, "Modifier")
+    fix_modifier_modifier_options(dataframes, filename, "Modifier ModifierOptions")
+    fix_modifier_options(dataframes, filename, "Modifier Option")
+    fix_modifier_group(dataframes, filename, "Modifier Group")
+    fix_category_modifiers(dataframes, filename, "Category Modifiers")
+    fix_category_modifier_group(dataframes, filename, "Category ModifierGroups")
+    fix_item_modifier_group(dataframes, filename, "Item Modifier Group")
 
-        elif sheetname == "Category Items":
-            fix_category_items_sheet(dataframes, filename, sheetname)
+    fix_tags(dataframes, "Tag")
+    fix_allergen(dataframes, "Allergen")
 
-        elif sheetname == "Item":
-            fix_items_sheet(dataframes, filename, sheetname)
-
-        elif sheetname == "Item Modifiers":
-            fix_item_modifiers(dataframes, filename, sheetname)
-
-        elif sheetname == "Modifier":
-            fix_modifier(dataframes, filename, sheetname)
-
-        elif sheetname == "Modifier ModifierOptions":
-            fix_modifier_modifier_options(dataframes, filename, sheetname)
-
-        elif sheetname == "Modifier Option":
-            fix_modifier_options(dataframes, filename, sheetname)
-        
-        # NO DATA
-        elif sheetname == "Modifier Group":
-            fix_modifier_group(dataframes, filename, sheetname)
-
-        # NO DATA
-        elif sheetname == "Category Modifiers":
-            fix_category_modifiers(dataframes, filename, sheetname)
-
-        # NO DATA
-        elif sheetname == "Category ModifierGroups":
-            fix_category_modifier_group(dataframes, filename, sheetname)
-
-        # NO DATA
-        elif sheetname == "Item Modifier Group":
-            fix_item_modifier_group(dataframes, filename, sheetname)
-
-        elif sheetname == "Tag":
-            fix_tags(dataframes, sheetname)
-
-        elif sheetname == "Allergen":
-            fix_allergen(dataframes, sheetname)
-
-        else:
-            add_remaining(dataframes, filename, sheetname)
-
-    # tag and allergens should be called here
+    add_remaining(dataframes, filename, "Setting")
+    add_remaining(dataframes, filename, "Visibility Setting")
+    add_remaining(dataframes, filename, "Day Schedule")
+    
     logger.info("Filling in missing fields has been completed.")
-
     return dataframes

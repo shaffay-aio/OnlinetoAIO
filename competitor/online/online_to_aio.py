@@ -85,11 +85,13 @@ def process_online(filename, platform):
 
 def assigner(aio_format, merged_df):
 
+    """
     # ISSUE TODO: as an item had same price, but with different categories it had different description
     # when it passes through UberEats, it uses assign_linked_ids so tehy get assigned same ids
     # when it passes through missing field it reassigns ids based on separate row
     # merged_df[['Item Name id', 'Item Name', 'Item Price']] = merged_df[['Item Name id', 'Item Name', 'Item Price']].drop_duplicates()
-
+    """
+    
     # 1: Assign Individual Sheets
     aio_format['Category'][['id', 'categoryName']] = merged_df[['Category Name id', 'Category Name']].dropna().drop_duplicates()
     aio_format['Item'][['id', 'itemName', 'itemDescription', 'itemPrice']] = merged_df[['Item Name id', 'Item Name', 'Item Description', 'Item Price']].drop_duplicates().dropna(subset=['Item Name'])
