@@ -81,20 +81,15 @@ def process_online(filename, platform):
         merged_df = assign_unique_ids(merged_df, 'Modifier Name')
         merged_df = assign_unique_ids(merged_df, 'Option Name')
 
+    merged_df[['Item Name', 'Item Name id', 'Modifier Name', 'Modifier Name id', 'Option Name', 'Option Name id']].drop_duplicates().to_csv("Merged.csv")
+    
     return merged_df, data['info']['Name']
 
 def assigner(aio_format, merged_df):
 
-    """
-    # ISSUE TODO: as an item had same price, but with different categories it had different description
-    # when it passes through UberEats, it uses assign_linked_ids so tehy get assigned same ids
-    # when it passes through missing field it reassigns ids based on separate row
-    # merged_df[['Item Name id', 'Item Name', 'Item Price']] = merged_df[['Item Name id', 'Item Name', 'Item Price']].drop_duplicates()
-    """
-    
     # 1: Assign Individual Sheets
     aio_format['Category'][['id', 'categoryName']] = merged_df[['Category Name id', 'Category Name']].dropna().drop_duplicates()
-    aio_format['Item'][['id', 'itemName', 'itemDescription', 'itemPrice']] = merged_df[['Item Name id', 'Item Name', 'Item Description', 'Item Price']].drop_duplicates().dropna(subset=['Item Name'])
+    aio_format['Item'][['id', 'itemName', 'itemDescription', 'itemPrice']] = merged_df[['Item Name id', 'Item Name', 'Item Description', 'Item Price']].drop_duplicates(subset=['Item Name id', 'Item Name', 'Item Price']).dropna(subset=['Item Name'])
     aio_format['Modifier'][['id', 'modifierName', 'isOptional']] = merged_df[['Modifier Name id', 'Modifier Name', 'Modifier Type']].dropna().drop_duplicates()
     aio_format['Modifier Option'][['id', 'optionName', 'price']] = merged_df[['Option Name id', 'Option Name', 'Option Price']].dropna().drop_duplicates()
 
@@ -105,6 +100,12 @@ def assigner(aio_format, merged_df):
     aio_format['Category Items']['id'] = [i+1 for i in range(0, len(aio_format['Category Items']))]
     aio_format['Item Modifiers'][['itemId', 'modifierId']] = merged_df[['Item Name id', 'Modifier Name id']].dropna().drop_duplicates()
     aio_format['Modifier ModifierOptions'][['modifierId', 'modifierOptionId']] = merged_df[['Modifier Name id', 'Option Name id']].dropna().drop_duplicates()
+
+    aio_format['Item'].to_csv("i.csv")
+    aio_format['Item Modifiers'].to_csv("im.csv")
+    aio_format['Modifier'].to_csv("m.csv")
+    aio_format['Modifier ModifierOptions'].to_csv("mmo.csv")
+    aio_format['Modifier Option'].to_csv("mo.csv")
 
     return aio_format
 
