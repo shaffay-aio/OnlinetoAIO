@@ -5,6 +5,21 @@ from utils.logging_config import setup_logger
 
 logger = setup_logger(__name__)
 
+def process_value(x):
+
+    """
+        - assign zero if entity can't be processed 
+    """
+    if pd.isnull(x): return 0 
+    elif isinstance(x, int): return x
+    elif isinstance(x, float): return x
+    
+    elif isinstance(x, str):
+        try: return float(x.replace('$', ''))  # Remove '$' and convert to float
+        except ValueError: return 0
+        
+    else: return 0
+
 def assign_unique_ids(df, column_name):
 
     """
@@ -17,26 +32,6 @@ def assign_unique_ids(df, column_name):
     df[new_column_name] = df[column_name].map(value_to_id)
     return df
 
-def process_value(x):
-
-    if pd.isnull(x):
-        return 0  # Assign as it is if null
-    
-    elif isinstance(x, int):
-        return x  # Assign as it is if integer
-    
-    elif isinstance(x, float):
-        return x  # Assign as it is if float
-    
-    elif isinstance(x, str):
-        try: 
-            return float(x.replace('$', ''))  # Remove '$' and convert to float
-        except ValueError: 
-            return None  # Assign null if conversion fails
-        
-    else:
-        return None  # Assign null for unexpected types
-            
 def assign_linked_ids(merged_df, column_name, linkage_column_name):
 
     # make unique identifier using column and linkage
@@ -54,7 +49,7 @@ def assign_linked_ids(merged_df, column_name, linkage_column_name):
 
 def process_online(filename, platform):
     
-    # read online available data and merge
+    # 1: Read and Merge Online Data
     data = pd.read_excel(filename, sheet_name=None)
 
     item = data['items']
@@ -64,18 +59,18 @@ def process_online(filename, platform):
     merged_df = pd.merge(item, modifier, how='outer', left_on='Item Name', right_on='item_name')
     merged_df.drop('item_name', axis=1, inplace=True)
 
-    # process online data
     merged_df = merged_df.rename(columns={ 'modifier_name': 'Modifier Name', 'option_name': 'Option Name', 'option_price': 'Option Price', 'modifier_type': 'Modifier Type' })
+
+    # 2: Process Columns
     merged_df['Modifier Type'] = merged_df['Modifier Type'].apply( lambda x: True if pd.isnull(x) else (False if 'required' in x.lower() else True) )
 
     for i in ['Item Price', 'Option Price']:
         merged_df[i] = merged_df[i].apply(process_value)
 
-    # if someone tests file via csv, its easier if ids are in sequence for particular category, item, modifier
     merged_df = merged_df.sort_values(by=['Category Name', 'Item Name', 'Modifier Name', 'Option Name'])
 
-    for i in ['Category Name']:
-        merged_df = assign_unique_ids(merged_df, i)
+    # 3: Assign Ids
+    merged_df = assign_unique_ids(merged_df, 'Category Name')
 
     if platform == 'Ubereats':
         merged_df = assign_linked_ids(merged_df, 'Item Name', 'Item Price')
@@ -90,29 +85,25 @@ def process_online(filename, platform):
 
 def assigner(aio_format, merged_df):
 
-    # assign individual data
-    aio_format['Category'][['id', 'categoryName']] = merged_df[['Category Name id', 'Category Name']].dropna().drop_duplicates()
-
     # ISSUE TODO: as an item had same price, but with different categories it had different description
     # when it passes through UberEats, it uses assign_linked_ids so tehy get assigned same ids
     # when it passes through missing field it reassigns ids based on separate row
     # merged_df[['Item Name id', 'Item Name', 'Item Price']] = merged_df[['Item Name id', 'Item Name', 'Item Price']].drop_duplicates()
-    aio_format['Item'][['id', 'itemName', 'itemDescription', 'itemPrice']] = merged_df[['Item Name id', 'Item Name', 'Item Description', 'Item Price']].drop_duplicates()
-    aio_format['Item'] = aio_format['Item'].dropna(subset=['itemName'])
 
+    # 1: Assign Individual Sheets
+    aio_format['Category'][['id', 'categoryName']] = merged_df[['Category Name id', 'Category Name']].dropna().drop_duplicates()
+    aio_format['Item'][['id', 'itemName', 'itemDescription', 'itemPrice']] = merged_df[['Item Name id', 'Item Name', 'Item Description', 'Item Price']].drop_duplicates().dropna(subset=['Item Name'])
     aio_format['Modifier'][['id', 'modifierName', 'isOptional']] = merged_df[['Modifier Name id', 'Modifier Name', 'Modifier Type']].dropna().drop_duplicates()
-    merged_df['Option Price'] = merged_df['Option Price'].fillna(0)
     aio_format['Modifier Option'][['id', 'optionName', 'price']] = merged_df[['Option Name id', 'Option Name', 'Option Price']].dropna().drop_duplicates()
 
-    # assign mapping data
+    # 2: Assign Mapping Sheets
     merged_df = merged_df[['Category Name id', 'Item Name id', 'Modifier Name id', 'Option Name id']].sort_values(by=['Category Name id', 'Item Name id', 'Modifier Name id', 'Option Name id'], ascending=[True, True, True, True])
 
     aio_format['Category Items'][['categoryId', 'itemId']] = merged_df[['Category Name id', 'Item Name id']].dropna().drop_duplicates()
     aio_format['Category Items']['id'] = [i+1 for i in range(0, len(aio_format['Category Items']))]
-
     aio_format['Item Modifiers'][['itemId', 'modifierId']] = merged_df[['Item Name id', 'Modifier Name id']].dropna().drop_duplicates()
-
     aio_format['Modifier ModifierOptions'][['modifierId', 'modifierOptionId']] = merged_df[['Modifier Name id', 'Option Name id']].dropna().drop_duplicates()
+
     return aio_format
 
 def process_online_only(filename, selected_value):
