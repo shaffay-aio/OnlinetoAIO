@@ -67,9 +67,15 @@ def process_online(filename, platform):
     for i in ['Item Price', 'Option Price']:
         merged_df[i] = merged_df[i].apply(process_value)
 
+    # 3: Sort Ids for Convenient Testing
     merged_df = merged_df.sort_values(by=['Category Name', 'Item Name', 'Modifier Name', 'Option Name'])
 
-    # 3: Assign Ids
+    merged_df['Category Name'] = pd.Categorical(merged_df['Category Name'], categories=item['Category Name'].unique(), ordered=True)
+    merged_df = merged_df.sort_values('Category Name')
+
+    merged_df['Category Name'] = merged_df['Category Name'].astype(str)
+
+    # 4: Assign Ids
     merged_df = assign_unique_ids(merged_df, 'Category Name')
 
     if platform == 'Ubereats':
@@ -80,8 +86,6 @@ def process_online(filename, platform):
         merged_df = assign_unique_ids(merged_df, 'Item Name')
         merged_df = assign_unique_ids(merged_df, 'Modifier Name')
         merged_df = assign_unique_ids(merged_df, 'Option Name')
-
-    merged_df[['Item Name', 'Item Name id', 'Modifier Name', 'Modifier Name id', 'Option Name', 'Option Name id']].drop_duplicates().to_csv("Merged.csv")
     
     return merged_df, data['info']['Name']
 
@@ -100,12 +104,6 @@ def assigner(aio_format, merged_df):
     aio_format['Category Items']['id'] = [i+1 for i in range(0, len(aio_format['Category Items']))]
     aio_format['Item Modifiers'][['itemId', 'modifierId']] = merged_df[['Item Name id', 'Modifier Name id']].dropna().drop_duplicates()
     aio_format['Modifier ModifierOptions'][['modifierId', 'modifierOptionId']] = merged_df[['Modifier Name id', 'Option Name id']].dropna().drop_duplicates()
-
-    aio_format['Item'].to_csv("i.csv")
-    aio_format['Item Modifiers'].to_csv("im.csv")
-    aio_format['Modifier'].to_csv("m.csv")
-    aio_format['Modifier ModifierOptions'].to_csv("mmo.csv")
-    aio_format['Modifier Option'].to_csv("mo.csv")
 
     return aio_format
 
