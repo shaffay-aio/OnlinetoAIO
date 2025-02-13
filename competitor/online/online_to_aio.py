@@ -32,20 +32,21 @@ def assign_unique_ids(df, column_name):
     df[new_column_name] = df[column_name].map(value_to_id)
     return df
 
-def assign_linked_ids(merged_df, column_name, linkage_column_name):
+def assign_linked_ids(merged_df, column_name, linkage_column_name, additional_column=None):
+    
+    # Step 1: Create a unique key based on provided columns
+    if additional_column:
+        merged_df['key'] = merged_df[linkage_column_name].astype(str) + '-' + merged_df[column_name].astype(str) + '-' + merged_df[additional_column].astype(str)
+    else:
+        merged_df['key'] = merged_df[linkage_column_name].astype(str) + '-' + merged_df[column_name].astype(str)
 
-    # make unique identifier using column and linkage
-    key = f'{column_name} Key'
-    merged_df[key] = merged_df[linkage_column_name].astype(str) + '-' + merged_df[column_name]
-    uniques = merged_df[[key, linkage_column_name, column_name]].drop_duplicates().reset_index(drop=True)
-    uniques.dropna(inplace=True)
-    uniques = uniques.reset_index(drop=True)
+    # Step 2: Use factorize to assign unique numeric IDs
+    merged_df[f'{column_name} id'] = pd.factorize(merged_df['key'])[0] + 1
 
-    # assign id and reverse map
-    uniques[f'{column_name} id'] = list(range(1, len(uniques) + 1)) # uniques.index + 1  
-    df = merged_df.merge(uniques[[key, f'{column_name} id']], on=key, how='left')
-    df.drop(key, inplace=True, axis=1)
-    return df
+    # Step 3: Drop the temporary key column
+    merged_df.drop(columns=['key'], inplace=True)
+
+    return merged_df
 
 def process_online(filename, platform):
     
@@ -67,34 +68,33 @@ def process_online(filename, platform):
     for i in ['Item Price', 'Option Price']:
         merged_df[i] = merged_df[i].apply(process_value)
 
+    # 3: Sort Ids for Convenient Testing
     merged_df = merged_df.sort_values(by=['Category Name', 'Item Name', 'Modifier Name', 'Option Name'])
 
-    # 3: Assign Ids
+    merged_df['Category Name'] = pd.Categorical(merged_df['Category Name'], categories=item['Category Name'].unique(), ordered=True)
+    merged_df = merged_df.sort_values('Category Name')
+
+    merged_df['Category Name'] = merged_df['Category Name'].astype(str)
+
+    # 4: Assign Ids
     merged_df = assign_unique_ids(merged_df, 'Category Name')
 
     if platform == 'Ubereats':
-        merged_df = assign_linked_ids(merged_df, 'Item Name', 'Item Price')
+        merged_df = assign_linked_ids(merged_df, 'Item Name', 'Item Price', 'Item Description')
         merged_df = assign_linked_ids(merged_df, 'Modifier Name', 'Item Name id')
         merged_df = assign_linked_ids(merged_df, 'Option Name', 'Option Price')
     else:
         merged_df = assign_unique_ids(merged_df, 'Item Name')
         merged_df = assign_unique_ids(merged_df, 'Modifier Name')
         merged_df = assign_unique_ids(merged_df, 'Option Name')
-
+    
     return merged_df, data['info']['Name']
 
 def assigner(aio_format, merged_df):
 
-    """
-    # ISSUE TODO: as an item had same price, but with different categories it had different description
-    # when it passes through UberEats, it uses assign_linked_ids so tehy get assigned same ids
-    # when it passes through missing field it reassigns ids based on separate row
-    # merged_df[['Item Name id', 'Item Name', 'Item Price']] = merged_df[['Item Name id', 'Item Name', 'Item Price']].drop_duplicates()
-    """
-    
     # 1: Assign Individual Sheets
     aio_format['Category'][['id', 'categoryName']] = merged_df[['Category Name id', 'Category Name']].dropna().drop_duplicates()
-    aio_format['Item'][['id', 'itemName', 'itemDescription', 'itemPrice']] = merged_df[['Item Name id', 'Item Name', 'Item Description', 'Item Price']].drop_duplicates().dropna(subset=['Item Name'])
+    aio_format['Item'][['id', 'itemName', 'itemDescription', 'itemPrice']] = merged_df[['Item Name id', 'Item Name', 'Item Description', 'Item Price']].drop_duplicates(subset=['Item Name id', 'Item Name', 'Item Price']).dropna(subset=['Item Name'])
     aio_format['Modifier'][['id', 'modifierName', 'isOptional']] = merged_df[['Modifier Name id', 'Modifier Name', 'Modifier Type']].dropna().drop_duplicates()
     aio_format['Modifier Option'][['id', 'optionName', 'price']] = merged_df[['Option Name id', 'Option Name', 'Option Price']].dropna().drop_duplicates()
 
